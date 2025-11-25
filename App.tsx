@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { HashRouter, Routes, Route, NavLink, useLocation } from 'react-router-dom';
-import { Leaf, Heart, MessageCircle, ChefHat, LayoutDashboard, Menu, X } from 'lucide-react';
-import Dashboard from './components/Dashboard';
-import RecipeGenerator from './components/RecipeGenerator';
-import WellnessChat from './components/WellnessChat';
-import MoodTracker from './components/MoodTracker';
+import { Leaf, Heart, MessageCircle, ChefHat, LayoutDashboard, Menu, X, Loader2 } from 'lucide-react';
+
+// Lazy load components to split chunks and reduce initial bundle size
+const Dashboard = lazy(() => import('./components/Dashboard'));
+const RecipeGenerator = lazy(() => import('./components/RecipeGenerator'));
+const WellnessChat = lazy(() => import('./components/WellnessChat'));
+const MoodTracker = lazy(() => import('./components/MoodTracker'));
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -62,16 +64,16 @@ const Navigation = () => {
                   `}
                 >
                   <Icon className="w-5 h-5" />
-                  <span className="font-medium">{item.label}</span>
+                  <span className="font-medium tracking-wide">{item.label}</span>
                 </NavLink>
               );
             })}
           </div>
 
           <div className="p-6 border-t border-earth-200">
-            <div className="bg-sage-50 p-4 rounded-xl border border-sage-100">
-              <p className="text-xs text-sage-600 font-medium uppercase tracking-wider mb-1">Daily Wisdom</p>
-              <p className="text-sm text-sage-800 italic font-serif">"Let food be thy medicine and medicine be thy food."</p>
+            <div className="bg-sage-50 p-6 rounded-xl border border-sage-100 text-center">
+              <p className="text-xs text-sage-600 font-bold uppercase tracking-widest mb-2">Daily Mantra</p>
+              <p className="text-sm text-sage-800 italic font-serif leading-relaxed">"Let food be thy medicine and medicine be thy food."</p>
             </div>
           </div>
         </div>
@@ -88,18 +90,27 @@ const Navigation = () => {
   );
 };
 
+const PageLoader = () => (
+  <div className="h-full w-full flex flex-col items-center justify-center text-sage-600 min-h-[60vh]">
+    <Loader2 className="w-8 h-8 animate-spin mb-2" />
+    <span className="font-serif text-earth-600">Preparing your space...</span>
+  </div>
+);
+
 const App: React.FC = () => {
   return (
     <HashRouter>
-      <div className="flex flex-col md:flex-row min-h-screen bg-earth-50">
+      <div className="flex flex-col md:flex-row min-h-screen bg-earth-50 font-sans">
         <Navigation />
-        <main className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-8 overflow-y-auto h-screen">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/recipes" element={<RecipeGenerator />} />
-            <Route path="/chat" element={<WellnessChat />} />
-            <Route path="/mood" element={<MoodTracker />} />
-          </Routes>
+        <main className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-8 overflow-y-auto h-screen scroll-smooth">
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/recipes" element={<RecipeGenerator />} />
+              <Route path="/chat" element={<WellnessChat />} />
+              <Route path="/mood" element={<MoodTracker />} />
+            </Routes>
+          </Suspense>
         </main>
       </div>
     </HashRouter>
